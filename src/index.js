@@ -9,10 +9,10 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />  {/* ← Fixed: element, lowercase e */}
-        {/* Add more routes here if needed */}
-      </Routes>
+      {/* <Routes>
+        <Route path="/" element={<App />} />
+      </Routes> */}
+      <App/>
     </BrowserRouter>
   </React.StrictMode>
 );
