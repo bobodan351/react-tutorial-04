@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import api from "./api/posts";
 import EditPost from "./EditPost";
+import useWindowSize from "./hooks/useWindowSize";
+import useAxiosFetch from "./hooks/useAxiosFetch";
 
 function App() {
   const navigate = useNavigate();
@@ -20,32 +22,15 @@ function App() {
   const [postTitle, setPostTitle] = useState("");
   const [postBody, setPostBody] = useState("");
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true)
+  // const [isLoading, setIsLoading] = useState(true)
   const [editTitle, setEditTitle] = useState("")
   const [editBody, setEditBody] = useState("")
-
+  const { width } = useWindowSize();
+  const  {data,fetchError,isLoading} = useAxiosFetch('http://localhost:6060/posts')
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get("/posts");
-        setPosts(response.data);
-      } catch (err) {
-        if (err.response) {
-          //when the response is not in the 200 range,do all these below 
-          console.log(err.response.data.message);
-          console.log(err.response.status);
-          console.log(err.response.headers);
-        } else {
-          // when there is not a response
-          console.log(`Error: ${err.response}`)
-        }
-      }
-      finally {
-        setIsLoading(false)
-      }
-    };
-      fetchPosts();
-  }, []);
+    setPosts(data)
+  },[data])
+
 const handleDelete = async (id) => {
   try {
     await api.delete(`/posts/${id}`);
@@ -58,7 +43,11 @@ const handleDelete = async (id) => {
   }
 };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
+    if (postTitle.trim() === "" || postBody.trim() === "") {
+      alert("Title and Body cannot be empty");
+      return;
+    }
   e.preventDefault();
   const datetime = format(new Date(), " MMM dd, yyyy pp");
   const newPost = { title: postTitle, datetime, body: postBody }; // ID is removed
@@ -72,8 +61,12 @@ const handleSubmit = async (e) => {
   } catch (err) { console.log(err.response); }
 };
   const handleEdit = async (id) => {
+    if (editTitle.trim() === "" || editBody.trim() === "") {
+      alert("Title and Body cannot be empty");
+      return;
+    }
     const datetime = format(new Date(), 'MMM dd,yyyy pp')
-    const updatedPost = { id, tittle: editTitle, datetime, body: editBody }
+    const updatedPost = { id, title: editTitle, datetime, body: editBody }
     try {
       const response = await api.put(`/posts/${id}`, updatedPost)
       setPosts(posts.map(post => post.id === id ? { ...response.data } : post))
@@ -94,11 +87,14 @@ const handleSubmit = async (e) => {
   }, [posts, search]);
   return (
     <div className="App">
-      <Header title={`React JS Blog`} />
+      <Header title={`React JS Blog`} width={width} />
       <Nav search={search} setSearch={setSearch} />
 
       <Routes>
-        <Route path="/" element={<Home posts={searchResult} isLoading={ isLoading} setIsLoading={setIsLoading} />} />
+        <Route path="/" element={<Home posts={searchResult}
+          fetchError={fetchError}
+
+          isLoading={isLoading}  />} />
         <Route
           path="/post"
           element={
@@ -127,7 +123,7 @@ const handleSubmit = async (e) => {
 
         <Route
           path="/post/:id"
-          element={<PostPage posts={posts} handleDelete={handleDelete} />}
+          element={<PostPage posts={posts} handleDelete={handleDelete} handleEdit={handleEdit} />}
         />{" "}
         {/* ← For /post/1, /post/5, etc. */}
         <Route path="/about" element={<About />} />

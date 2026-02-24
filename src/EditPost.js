@@ -6,7 +6,6 @@ const EditPost = ({
   posts,
   handleEdit,
   editBody,
-  setPostTitle,
   editTitle,
   setEditTitle,
   setEditBody,
@@ -18,7 +17,7 @@ const EditPost = ({
       setEditTitle(post.title);
       setEditBody(post.body);
     }
-  }, [post, editTitle, editBody]);
+  }, [post, setEditTitle, setEditBody]);
   return (
     <>
       <h2>Edit Post</h2>
@@ -33,9 +32,9 @@ const EditPost = ({
           type="text"
           required
           value={editTitle}
-          onChange={(e) => setPostTitle(e.target.value)}
+          onChange={(e) => setEditTitle(e.target.value)}
           id="editTitle"
-        />
+        />                       
         <label htmlFor="postBody">Body:</label>
         <textarea
           id="editBody"
@@ -43,7 +42,7 @@ const EditPost = ({
           value={editBody}
           onChange={(e) => setEditBody(e.target.value)}
         ></textarea>
-        <button type="submit" onClick={() => handleEdit(post.id)}>
+        <button type="submit" onClick={() => handleEdit(post.id)}  disabled={!editTitle.trim() || !editBody.trim()} >
           Submit
         </button>
       </form>
